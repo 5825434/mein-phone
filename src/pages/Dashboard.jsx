@@ -1,71 +1,91 @@
 import KpiCard from '../components/KpiCard'
 import StatusBadge from '../components/StatusBadge'
-import { kpis, monthlySales, salesByCategory, recentPortings } from '../data/sampleData'
+import {
+  kpis,
+  monthlyFinance,
+  monthlyPortings,
+  salesByCategory,
+  recentPortings,
+} from '../data/sampleData'
 
-const CHART_MAX = 20000
-const CHART_TOP = 10
-const CHART_BASE = 150
-const CHART_HEIGHT = CHART_BASE - CHART_TOP
-const BAR_WIDTH = 30
-const BAR_GAP = 18
+const CHART_W = 300
+const CHART_H = 150
+const PAD_TOP = 16
+const PAD_BOTTOM = 22
+const PAD_SIDE = 8
+const PLOT_H = CHART_H - PAD_TOP - PAD_BOTTOM
 
-function formatK(value) {
-  return `${(value / 1000).toFixed(1)}k`
+function scaleX(i, count) {
+  return PAD_SIDE + (i * (CHART_W - PAD_SIDE * 2)) / (count - 1)
 }
 
-function BarChart() {
+function formatK(value) {
+  return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`
+}
+
+// גרף קווים גנרי - מקבל כמה סדרות על אותו ציר ערכים (יחידה משותפת בלבד, לעולם לא שני צירים)
+function LineChart({ months, series, height = CHART_H, formatValue = formatK }) {
+  const max = Math.max(...series.flatMap((s) => s.data)) * 1.15
+  const scaleY = (v) => PAD_TOP + PLOT_H - (v / max) * PLOT_H
+
   return (
-    <svg viewBox="0 0 300 185" role="img" aria-label="גרף עמודות מכירות חודשיות">
-      <line x1="10" y1={CHART_BASE} x2="292" y2={CHART_BASE} stroke="#E6E4F0" strokeWidth="1" />
-      {monthlySales.map((point, i) => {
-        const x = 15 + i * (BAR_WIDTH + BAR_GAP)
-        const height = (point.value / CHART_MAX) * CHART_HEIGHT
-        const y = CHART_BASE - height
-        const isLast = i === monthlySales.length - 1
+    <svg viewBox={`0 0 ${CHART_W} ${height}`} width="100%" role="img" aria-label="גרף קווים">
+      <line
+        x1={PAD_SIDE}
+        y1={CHART_H - PAD_BOTTOM}
+        x2={CHART_W - PAD_SIDE}
+        y2={CHART_H - PAD_BOTTOM}
+        stroke="#E6E4F0"
+        strokeWidth="1"
+      />
+      {months.map((m, i) => (
+        <text
+          key={m}
+          x={scaleX(i, months.length)}
+          y={CHART_H - 6}
+          textAnchor="middle"
+          fontSize="10"
+          fill="#6B7280"
+        >
+          {m}
+        </text>
+      ))}
+      {series.map((s) => {
+        const points = s.data.map((v, i) => `${scaleX(i, months.length)},${scaleY(v)}`).join(' ')
+        const lastIdx = s.data.length - 1
         return (
-          <g key={point.month}>
-            <rect
-              x={x}
-              y={y}
-              width={BAR_WIDTH}
-              height={height}
-              rx="4"
-              fill={isLast ? 'url(#barGradCurrent)' : 'url(#barGrad)'}
-            />
+          <g key={s.name}>
+            <polyline points={points} fill="none" stroke={s.color} strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+            {s.data.map((v, i) => (
+              <circle key={i} cx={scaleX(i, months.length)} cy={scaleY(v)} r={i === lastIdx ? 3.5 : 2.5} fill={s.color} />
+            ))}
             <text
-              x={x + BAR_WIDTH / 2}
-              y={y - 6}
+              x={scaleX(lastIdx, months.length)}
+              y={scaleY(s.data[lastIdx]) - 8}
               textAnchor="middle"
-              fontSize="11"
-              fontWeight={isLast ? 800 : 700}
-              fill="#4B4B5A"
+              fontSize="10.5"
+              fontWeight="800"
+              fill={s.color}
             >
-              {formatK(point.value)}
-            </text>
-            <text
-              x={x + BAR_WIDTH / 2}
-              y={CHART_BASE + 16}
-              textAnchor="middle"
-              fontSize="11"
-              fontWeight={isLast ? 800 : 600}
-              fill={isLast ? '#7B3FE4' : '#6B7280'}
-            >
-              {point.month}
+              {formatValue(s.data[lastIdx])}
             </text>
           </g>
         )
       })}
-      <defs>
-        <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#A05AFF" />
-          <stop offset="1" stopColor="#C79BFF" />
-        </linearGradient>
-        <linearGradient id="barGradCurrent" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7B3FE4" />
-          <stop offset="1" stopColor="#A05AFF" />
-        </linearGradient>
-      </defs>
     </svg>
+  )
+}
+
+function Legend({ series }) {
+  return (
+    <div className="flex items-center gap-4 mt-1">
+      {series.map((s) => (
+        <div key={s.name} className="flex items-center gap-1.5 text-xs text-text-2">
+          <span className="w-2.5 h-2.5 rounded-full" style={{ background: s.color, width: 10, height: 10 }} />
+          {s.name}
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -93,7 +113,7 @@ function PieChart() {
   })
 
   return (
-    <svg viewBox="0 0 180 180" width="150" height="150" role="img" aria-label="עוגת פילוח מכירות לפי קטגוריה">
+    <svg viewBox="0 0 180 180" width="120" height="120" role="img" aria-label="עוגת פילוח מכירות לפי קטגוריה">
       {slices.map((slice) => (
         <path key={slice.name} d={slice.path} fill={slice.color} />
       ))}
@@ -116,6 +136,13 @@ function PieChart() {
 }
 
 export default function Dashboard() {
+  const months = monthlyFinance.map((m) => m.month)
+  const financeSeries = [
+    { name: 'הכנסות', color: 'var(--color-cat-1)', data: monthlyFinance.map((m) => m.income) },
+    { name: 'הוצאות', color: 'var(--color-cat-2)', data: monthlyFinance.map((m) => m.expenses) },
+  ]
+  const portingsSeries = [{ name: 'ניודים', color: 'var(--color-brand)', data: monthlyPortings.map((m) => m.count) }]
+
   return (
     <div className="flex flex-col gap-4.5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
@@ -124,20 +151,27 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-3.5">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_1fr_1fr] gap-3.5">
         <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
-          <div className="font-bold text-sm">מכירות לפי חודש</div>
+          <div className="font-bold text-sm">הכנסות מול הוצאות</div>
           <div className="text-xs text-text-2 mb-1">6 חודשים אחרונים, בש"ח</div>
-          <BarChart />
+          <LineChart months={months} series={financeSeries} />
+          <Legend series={financeSeries} />
+        </div>
+
+        <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
+          <div className="font-bold text-sm">ניודים לפי חודש</div>
+          <div className="text-xs text-text-2 mb-1">6 חודשים אחרונים, כמות</div>
+          <LineChart months={months} series={portingsSeries} formatValue={(v) => `${v}`} />
         </div>
 
         <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
           <div className="font-bold text-sm">פילוח מכירות לפי קטגוריה</div>
           <div className="text-xs text-text-2 mb-1">החודש הנוכחי</div>
-          <div className="flex justify-center py-2">
+          <div className="flex justify-center py-1">
             <PieChart />
           </div>
-          <div className="flex flex-col gap-2 pt-1">
+          <div className="flex flex-col gap-1.5 pt-1">
             {salesByCategory.map((cat) => (
               <div key={cat.name} className="flex items-center gap-2.5 text-sm">
                 <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: cat.color, width: 10, height: 10 }} />

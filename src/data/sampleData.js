@@ -16,6 +16,26 @@ export const monthlySales = [
   { month: 'ספט', value: 18240 },
 ]
 
+// הכנסות מול הוצאות (שני המדדים בש"ח, לכן ניתן להציג על אותו ציר)
+export const monthlyFinance = [
+  { month: 'אפר', income: 11200, expenses: 7300 },
+  { month: 'מאי', income: 13800, expenses: 8100 },
+  { month: 'יונ', income: 15100, expenses: 9400 },
+  { month: 'יול', income: 14400, expenses: 8800 },
+  { month: 'אוג', income: 16900, expenses: 9900 },
+  { month: 'ספט', income: 18240, expenses: 10600 },
+]
+
+// מספר ניודים (יחידה שונה מהכנסות/הוצאות - כמות, לא ש"ח - לכן בגרף נפרד)
+export const monthlyPortings = [
+  { month: 'אפר', count: 9 },
+  { month: 'מאי', count: 11 },
+  { month: 'יונ', count: 12 },
+  { month: 'יול', count: 10 },
+  { month: 'אוג', count: 14 },
+  { month: 'ספט', count: 16 },
+]
+
 export const salesByCategory = [
   { name: 'טלפונים', pct: 52, color: 'var(--color-cat-1)' },
   { name: 'אביזרים', pct: 28, color: 'var(--color-cat-2)' },
