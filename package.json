@@ -2,6 +2,8 @@
   "name": "mein-phone",
   "private": true,
   "version": "0.0.0",
+  "description": "מערכת ניהול לעסק מיין פון - ניוד קווים, מכירת טלפונים, מלאי וספקים",
+  "author": "מיין פון",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {
