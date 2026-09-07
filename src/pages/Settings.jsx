@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Panel from '../components/Panel'
 import Field from '../components/Field'
-import { carrierOptions } from '../data/sampleData'
+import { carrierOptions, giftOptions } from '../data/sampleData'
 
 const tabs = [
   { id: 'profile', label: 'פרופיל אישי' },
@@ -10,6 +10,7 @@ const tabs = [
   { id: 'reminders', label: 'תזכורות ניודים' },
   { id: 'stock', label: 'התראות מלאי' },
   { id: 'carriers', label: 'ספקי סלולר' },
+  { id: 'gifts', label: 'מתנות לניוד' },
   { id: 'data', label: 'ניהול נתונים' },
   { id: 'display', label: 'עיצוב/תצוגה' },
 ]
@@ -141,6 +142,68 @@ function CarriersTab() {
   )
 }
 
+function GiftsTab() {
+  const [gifts, setGifts] = useState(giftOptions)
+  const [newName, setNewName] = useState('')
+  const [newRequired, setNewRequired] = useState(1)
+
+  return (
+    <div className="flex flex-col gap-3 max-w-md">
+      <div className="flex flex-col gap-2">
+        {gifts.map((g, i) => (
+          <div key={g.name} className="flex items-center gap-2 border border-border rounded-lg px-3 py-2 text-sm">
+            <span className="font-semibold flex-1">{g.name}</span>
+            <input
+              type="number"
+              min="1"
+              value={g.requiredPortings}
+              onChange={(e) =>
+                setGifts(gifts.map((x, xi) => (xi === i ? { ...x, requiredPortings: Number(e.target.value) || 1 } : x)))
+              }
+              className="w-16 border border-border rounded-lg px-2 py-1 text-sm text-center tabular-nums"
+            />
+            <span className="text-xs text-text-2">ניודים</span>
+            <button onClick={() => setGifts(gifts.filter((x) => x.name !== g.name))} className="text-text-2 hover:text-danger px-1">
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <div className="flex gap-2">
+        <input
+          value={newName}
+          onChange={(e) => setNewName(e.target.value)}
+          placeholder="שם מתנה חדשה..."
+          className="border border-border rounded-lg px-3 py-2 text-sm bg-white flex-1"
+        />
+        <input
+          type="number"
+          min="1"
+          value={newRequired}
+          onChange={(e) => setNewRequired(Number(e.target.value) || 1)}
+          className="w-16 border border-border rounded-lg px-2 py-2 text-sm text-center tabular-nums"
+        />
+        <button
+          onClick={() => {
+            if (newName.trim()) {
+              setGifts([...gifts, { name: newName.trim(), requiredPortings: newRequired }])
+              setNewName('')
+              setNewRequired(1)
+            }
+          }}
+          className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white hover:bg-[#8f45f0] transition-colors"
+        >
+          הוסף
+        </button>
+      </div>
+      <p className="text-xs text-text-2">
+        "כמות ניודים" = סה"כ ניודים שהלקוח צריך לבצע כדי להצדיק את המתנה (כולל הניוד הנוכחי). כשבוחרים
+        מתנה בכרטיס לקוח, המספר הזה יתמלא אוטומטית. הרשימה פעילה בדפדפן שלך בלבד לצורך הדגמה.
+      </p>
+    </div>
+  )
+}
+
 function DataTab() {
   const [confirmText, setConfirmText] = useState('')
   const [showFinalWarning, setShowFinalWarning] = useState(false)
@@ -208,6 +271,7 @@ const tabContent = {
   reminders: RemindersTab,
   stock: StockTab,
   carriers: CarriersTab,
+  gifts: GiftsTab,
   data: DataTab,
   display: DisplayTab,
 }
