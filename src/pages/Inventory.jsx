@@ -51,8 +51,10 @@ export default function Inventory() {
   const tabBtn = (val, label) => (
     <button
       onClick={() => setVatTab(val)}
-      className={`px-4 py-2 rounded-lg text-sm font-semibold ${
-        vatTab === val ? 'bg-brand text-white' : 'bg-white text-text-2 border border-border'
+      className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
+        vatTab === val
+          ? 'bg-brand text-white hover:bg-[#8f45f0] hover:shadow-md'
+          : 'bg-white text-text-2 border border-border hover:border-brand/50 hover:text-brand'
       }`}
     >
       {label}

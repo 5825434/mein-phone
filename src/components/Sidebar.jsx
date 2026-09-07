@@ -35,8 +35,10 @@ export default function Sidebar() {
             to={to}
             end={end}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13.5px] font-medium ${
-                isActive ? 'bg-white/15 text-white font-bold' : 'text-[#C9BEEA]'
+              `flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13.5px] font-medium transition-colors duration-150 ${
+                isActive
+                  ? 'bg-white/15 text-white font-bold'
+                  : 'text-[#C9BEEA] hover:bg-white/10 hover:text-white'
               }`
             }
           >

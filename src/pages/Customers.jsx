@@ -4,7 +4,8 @@ import DataTable from '../components/DataTable'
 import StatusBadge from '../components/StatusBadge'
 import Field from '../components/Field'
 import FilterBar, { TextFilter, SelectFilter } from '../components/FilterBar'
-import { customers as initialCustomers, orders } from '../data/sampleData'
+import { customers as initialCustomers, orders, carrierOptions } from '../data/sampleData'
+import { onlyDigits, formatPhone } from '../lib/format'
 
 const statusOptions = [
   { value: 'pending', label: 'ממתין לניוד הבא' },
@@ -12,8 +13,6 @@ const statusOptions = [
   { value: 'late', label: 'באיחור' },
   { value: 'declined', label: 'נדחה' },
 ]
-
-const onlyDigits = (str) => str.replace(/\D/g, '')
 
 function AddCustomerModal({ onClose, onAdd }) {
   const [name, setName] = useState('')
@@ -28,11 +27,25 @@ function AddCustomerModal({ onClose, onAdd }) {
         <div className="font-display font-bold text-lg mb-4">לקוח חדש</div>
         <div className="flex flex-col gap-3">
           <Field label="שם מלא" value={name} onChange={(e) => setName(e.target.value)} placeholder="לדוגמה: נועה שלו" />
-          <Field label="טלפון" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="050-1234567" />
-          <Field label="ספק נוכחי" value={currentCarrier} onChange={(e) => setCurrentCarrier(e.target.value)} placeholder="לדוגמה: סלקום" />
+          <Field label="טלפון" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="0501234567 (עם או בלי מקף)" />
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="font-semibold text-text-2 text-xs">ספק נוכחי</span>
+            <select
+              value={currentCarrier}
+              onChange={(e) => setCurrentCarrier(e.target.value)}
+              className="border border-border rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand/40"
+            >
+              <option value="">בחר ספק...</option>
+              {carrierOptions.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
         <div className="flex gap-2 justify-end mt-5">
-          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold border border-border">
+          <button onClick={onClose} className="px-4 py-2 rounded-lg text-sm font-semibold border border-border hover:bg-bg transition-colors">
             ביטול
           </button>
           <button
@@ -41,8 +54,8 @@ function AddCustomerModal({ onClose, onAdd }) {
               onAdd({
                 id: Date.now(),
                 name: name.trim(),
-                phone: phone.trim(),
-                currentCarrier: currentCarrier.trim() || '—',
+                phone: formatPhone(phone.trim()),
+                currentCarrier: currentCarrier || '—',
                 futureCarrier: '—',
                 futureDueDate: '—',
                 joined: new Date().toLocaleDateString('he-IL'),
@@ -52,7 +65,7 @@ function AddCustomerModal({ onClose, onAdd }) {
               })
               onClose()
             }}
-            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white disabled:bg-gray-200 disabled:text-text-2 disabled:cursor-not-allowed"
+            className="px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white hover:bg-[#8f45f0] hover:shadow-md transition-all disabled:bg-gray-200 disabled:text-text-2 disabled:cursor-not-allowed disabled:shadow-none"
           >
             הוסף לקוח
           </button>
@@ -122,7 +135,7 @@ function CustomerDrawer({ customer, onClose, onSaveNotes }) {
         />
         <button
           onClick={() => onSaveNotes(notes)}
-          className="mt-2 px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white"
+          className="mt-2 px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white hover:bg-[#8f45f0] hover:shadow-md transition-all"
         >
           שמור הערה
         </button>
@@ -151,15 +164,7 @@ export default function Customers() {
   }, [customers, search, status])
 
   const columns = [
-    {
-      key: 'name',
-      header: 'לקוח',
-      render: (r) => (
-        <button onClick={() => setSelected(r)} className="font-semibold text-brand hover:underline">
-          {r.name}
-        </button>
-      ),
-    },
+    { key: 'name', header: 'לקוח', render: (r) => <span className="font-semibold text-brand">{r.name}</span> },
     { key: 'phone', header: 'טלפון', render: (r) => <span className="tabular-nums">{r.phone}</span> },
     { key: 'currentCarrier', header: 'ספק נוכחי' },
     {
@@ -179,14 +184,14 @@ export default function Customers() {
         <span className="text-xs text-text-2">{filtered.length} לקוחות</span>
         <button
           onClick={() => setShowAdd(true)}
-          className="ms-auto px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white"
+          className="ms-auto px-4 py-2 rounded-lg text-sm font-semibold bg-brand text-white hover:bg-[#8f45f0] hover:shadow-md transition-all"
         >
           + לקוח חדש
         </button>
       </FilterBar>
 
-      <Panel title="כל הלקוחות" subtitle="לחיצה על שם לקוח פותחת את הכרטיס המלא שלו">
-        <DataTable columns={columns} rows={filtered} rowKey="id" />
+      <Panel title="כל הלקוחות" subtitle="לחיצה על השורה פותחת את הכרטיס המלא של הלקוח">
+        <DataTable columns={columns} rows={filtered} rowKey="id" onRowClick={setSelected} />
       </Panel>
 
       <p className="text-xs text-text-2 max-w-2xl">

@@ -1,10 +1,15 @@
 // נתוני דוגמה בלבד — ישמשו למילוי המסכים עד שיחובר Supabase בפועל (ראו src/lib/supabaseClient.js).
 
+// רשימת ספקי סלולר משותפת - גם למסך ההגדרות וגם לבחירה בכרטיס לקוח (סעיף 3.10-ח באיפיון)
+export const carrierOptions = [
+  'סלקום', 'פרטנר', 'פלאפון', 'הוט מובייל', 'רמי לוי תקשורת', 'גולן טלקום', 'וואן (019)',
+]
+
 export const kpis = [
-  { label: 'מכירות החודש', value: '18,240 ₪', trend: '▲ 12% מהחודש שעבר' },
-  { label: 'ניודים החודש', value: '16', trend: '▲ 4 ניודים' },
-  { label: 'תזכורות פתוחות', value: '5', trend: '2 באיחור' },
-  { label: 'מלאי קריטי', value: '3 פריטים', trend: 'מתחת לסף' },
+  { label: 'מכירות החודש', value: '18,240 ₪', trend: '▲ 12% מהחודש שעבר', to: '/orders' },
+  { label: 'ניודים החודש', value: '16', trend: '▲ 4 ניודים', to: '/portings' },
+  { label: 'תזכורות פתוחות', value: '5', trend: '2 באיחור', to: '/portings' },
+  { label: 'מלאי קריטי', value: '3 פריטים', trend: 'מתחת לסף', to: '/inventory' },
 ]
 
 export const monthlySales = [

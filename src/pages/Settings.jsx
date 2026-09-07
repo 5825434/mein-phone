@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Panel from '../components/Panel'
 import Field from '../components/Field'
+import { carrierOptions } from '../data/sampleData'
 
 const tabs = [
   { id: 'profile', label: 'פרופיל אישי' },
@@ -99,9 +100,7 @@ function StockTab() {
 }
 
 function CarriersTab() {
-  const [carriers, setCarriers] = useState([
-    'סלקום', 'פרטנר', 'פלאפון', 'הוט מובייל', 'רמי לוי תקשורת', 'גולן טלקום', 'וואן (019)',
-  ])
+  const [carriers, setCarriers] = useState(carrierOptions)
   const [newCarrier, setNewCarrier] = useState('')
 
   return (
@@ -224,8 +223,8 @@ export default function Settings() {
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className={`text-right px-3 py-2 rounded-lg text-sm font-medium ${
-              active === tab.id ? 'bg-brand text-white font-bold' : 'text-text-2 hover:bg-white'
+            className={`text-right px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              active === tab.id ? 'bg-brand text-white font-bold' : 'text-text-2 hover:bg-white hover:text-brand'
             }`}
           >
             {tab.label}
