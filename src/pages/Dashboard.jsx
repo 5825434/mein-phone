@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import KpiCard from '../components/KpiCard'
 import StatusBadge from '../components/StatusBadge'
 import CustomerDrawer from '../components/CustomerDrawer'
@@ -11,16 +11,13 @@ import {
   customers,
 } from '../data/sampleData'
 
+const VISIBLE_MONTHS = 6
 const CHART_W = 260
 const CHART_H = 190
 const PAD_TOP = 24
 const PAD_BOTTOM = 24
 const PAD_SIDE = 10
 const PLOT_H = CHART_H - PAD_TOP - PAD_BOTTOM
-
-function scaleX(i, count) {
-  return PAD_SIDE + (i * (CHART_W - PAD_SIDE * 2)) / (count - 1)
-}
 
 function formatK(value) {
   return value >= 1000 ? `${(value / 1000).toFixed(1)}k` : `${value}`
@@ -34,6 +31,62 @@ const METRIC_COLORS = {
   income: 'var(--color-cat-1)',
   expenses: 'var(--color-cat-2)',
   portings: 'var(--color-brand)',
+}
+
+// עוטף גרף ברוחב מלא (12 חודשים) בתוך חלון גלילה שמציג רק 6 בכל רגע - נגרר בעכבר כמו בגרפים של מניות.
+// dir="ltr" נקבע בכוונה רק על עוטף הגרירה הזה (לא על שאר האתר) כדי שסמנטיקת גלילה שמאל-ימין תהיה עקבית בין דפדפנים.
+function DragScroll({ widthRatio, onScrollChange, children }) {
+  const ref = useRef(null)
+  const drag = useRef({ active: false, startX: 0, startScroll: 0 })
+
+  const report = () => {
+    if (ref.current && onScrollChange) onScrollChange(ref.current.scrollLeft, ref.current.scrollWidth)
+  }
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let didInit = false
+    // ממתין שהאלמנט יקבל את המידות האמיתיות שלו (למשל אחרי טעינת הגופן) לפני שמגלילים לסוף - רדף אחר אירוע resize יחיד בלבד
+    const ro = new ResizeObserver(() => {
+      if (!didInit && el.scrollWidth > el.clientWidth) {
+        el.scrollLeft = el.scrollWidth
+        didInit = true
+        report()
+      }
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const onDown = (e) => {
+    drag.current = { active: true, startX: e.clientX, startScroll: ref.current.scrollLeft }
+  }
+  const onMove = (e) => {
+    if (!drag.current.active) return
+    ref.current.scrollLeft = drag.current.startScroll - (e.clientX - drag.current.startX)
+    report()
+  }
+  const stop = () => {
+    drag.current.active = false
+  }
+
+  return (
+    <div
+      ref={ref}
+      dir="ltr"
+      onMouseDown={onDown}
+      onMouseMove={onMove}
+      onMouseUp={stop}
+      onMouseLeave={stop}
+      onScroll={report}
+      className="overflow-x-auto cursor-grab active:cursor-grabbing select-none"
+      style={{ scrollbarWidth: 'thin' }}
+    >
+      <div style={{ width: `${widthRatio * 100}%` }}>{children}</div>
+    </div>
+  )
 }
 
 function ChartTooltip({ xPct, yPct, children }) {
@@ -77,8 +130,13 @@ function Legend() {
   )
 }
 
-// גרף מגמה מאוחד: שלוש הסדרות על אותו קנבס, ממודדות למגמת שינוי מאפריל=100 (כדי להשוות ש"ח מול כמות בלי ציר משותף מזויף)
+// גרף מגמה מאוחד: שלוש הסדרות על אותו קנבס, ממודדות למגמת שינוי מהחודש הראשון=100 (כדי להשוות ש"ח מול כמות בלי ציר משותף מזויף)
 function TrendChart({ months, income, expenses, portings, hoverIndex, onHover }) {
+  const [scroll, setScroll] = useState({ left: 0, width: 1 })
+  const w = CHART_W * (months.length / VISIBLE_MONTHS)
+  const scaleX = (i) => PAD_SIDE + (i * (w - PAD_SIDE * 2)) / (months.length - 1)
+  const viewBoxOffset = (scroll.left / scroll.width) * w
+
   const series = [
     { data: income, color: METRIC_COLORS.income },
     { data: expenses, color: METRIC_COLORS.expenses },
@@ -89,36 +147,39 @@ function TrendChart({ months, income, expenses, portings, hoverIndex, onHover })
   const max = Math.max(...allIdx) * 1.1
   const min = Math.min(...allIdx) * 0.9
   const scaleY = (v) => PAD_TOP + PLOT_H - ((v - min) / (max - min)) * PLOT_H
+  const hitW = w / months.length
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" role="img" aria-label="גרף מגמה מאוחד" onMouseLeave={() => onHover(null)}>
-        <line x1={PAD_SIDE} y1={CHART_H - PAD_BOTTOM} x2={CHART_W - PAD_SIDE} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1" />
-        {hoverIndex !== null && (
-          <line x1={scaleX(hoverIndex, months.length)} y1={PAD_TOP - 8} x2={scaleX(hoverIndex, months.length)} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1.5" strokeDasharray="3,3" />
-        )}
-        {months.map((m, i) => (
-          <text key={m} x={scaleX(i, months.length)} y={CHART_H - 7} textAnchor="middle" fontSize="9.5" fontWeight={i === hoverIndex ? 800 : 500} fill={i === hoverIndex ? 'var(--color-brand)' : '#6B7280'}>
-            {m}
-          </text>
-        ))}
-        {series.map((s, si) => {
-          const pts = indexed[si].map((v, i) => `${scaleX(i, months.length)},${scaleY(v)}`).join(' ')
-          return (
-            <g key={s.color}>
-              <polyline points={pts} fill="none" stroke={s.color} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" />
-              {indexed[si].map((v, i) => (
-                <circle key={i} cx={scaleX(i, months.length)} cy={scaleY(v)} r={i === hoverIndex ? 4 : 1.8} fill={s.color} stroke="#fff" strokeWidth={i === hoverIndex ? 1.2 : 0} />
-              ))}
-            </g>
-          )
-        })}
-        {months.map((_, i) => (
-          <rect key={`hit-${i}`} x={scaleX(i, months.length) - CHART_W / months.length / 2} y={0} width={CHART_W / months.length} height={CHART_H} fill="transparent" onMouseEnter={() => onHover(i)} />
-        ))}
-      </svg>
+      <DragScroll widthRatio={months.length / VISIBLE_MONTHS} onScrollChange={(left, width) => setScroll({ left, width })}>
+        <svg viewBox={`0 0 ${w} ${CHART_H}`} width="100%" style={{ display: 'block' }} role="img" aria-label="גרף מגמה מאוחד" onMouseLeave={() => onHover(null)}>
+          <line x1={PAD_SIDE} y1={CHART_H - PAD_BOTTOM} x2={w - PAD_SIDE} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1" />
+          {hoverIndex !== null && (
+            <line x1={scaleX(hoverIndex)} y1={PAD_TOP - 8} x2={scaleX(hoverIndex)} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1.5" strokeDasharray="3,3" />
+          )}
+          {months.map((m, i) => (
+            <text key={m + i} x={scaleX(i)} y={CHART_H - 7} textAnchor="middle" fontSize="7.5" fontWeight={i === hoverIndex ? 800 : 400} fill={i === hoverIndex ? 'var(--color-brand)' : '#9AA0AC'}>
+              {m}
+            </text>
+          ))}
+          {series.map((s, si) => {
+            const pts = indexed[si].map((v, i) => `${scaleX(i)},${scaleY(v)}`).join(' ')
+            return (
+              <g key={s.color}>
+                <polyline points={pts} fill="none" stroke={s.color} strokeWidth="1" strokeLinejoin="round" strokeLinecap="round" />
+                {indexed[si].map((v, i) => (
+                  <circle key={i} cx={scaleX(i)} cy={scaleY(v)} r={i === hoverIndex ? 3.5 : 1.4} fill={s.color} stroke="#fff" strokeWidth={i === hoverIndex ? 1.1 : 0} />
+                ))}
+              </g>
+            )
+          })}
+          {months.map((_, i) => (
+            <rect key={`hit-${i}`} x={scaleX(i) - hitW / 2} y={0} width={hitW} height={CHART_H} fill="transparent" onMouseEnter={() => onHover(i)} />
+          ))}
+        </svg>
+      </DragScroll>
       {hoverIndex !== null && (
-        <ChartTooltip xPct={(scaleX(hoverIndex, months.length) / CHART_W) * 100} yPct={(PAD_TOP / CHART_H) * 100}>
+        <ChartTooltip xPct={((scaleX(hoverIndex) - viewBoxOffset) / CHART_W) * 100} yPct={(PAD_TOP / CHART_H) * 100}>
           <TooltipRows month={months[hoverIndex]} income={income[hoverIndex]} expenses={expenses[hoverIndex]} portings={portings[hoverIndex]} />
         </ChartTooltip>
       )}
@@ -126,15 +187,20 @@ function TrendChart({ months, income, expenses, portings, hoverIndex, onHover })
   )
 }
 
-// גרף עמודות מקובצות: לכל חודש שלוש עמודות (הכנסות/הוצאות/ניודים), כל סדרה ממודדת לגובה יחסית לשיא שלה עצמה
-// (כדי שניודים בכמות קטנה לא "ייעלמו" ליד הכנסות בש"ח) - עם אותם צבעים כמו בגרף המגמה.
+// גרף עמודות מקובצות: הכנסות והוצאות (שתיהן ש"ח) חולקות סקאלה משותפת כדי שגובה העמודות באמת ישקף את היחס האמיתי ביניהן;
+// ניודים (כמות, יחידה שונה) על סקאלה נפרדת משלו - אותם צבעים כמו בגרף המגמה.
 function GroupedBarChart({ months, income, expenses, portings, hoverIndex, onHover }) {
+  const [scroll, setScroll] = useState({ left: 0, width: 1 })
+  const w = CHART_W * (months.length / VISIBLE_MONTHS)
+  const viewBoxOffset = (scroll.left / scroll.width) * w
+  const moneyMax = Math.max(...income, ...expenses) * 1.1
+  const portingsMax = Math.max(...portings) * 1.1
   const series = [
-    { data: income, color: METRIC_COLORS.income, max: Math.max(...income) },
-    { data: expenses, color: METRIC_COLORS.expenses, max: Math.max(...expenses) },
-    { data: portings, color: METRIC_COLORS.portings, max: Math.max(...portings) },
+    { data: income, color: METRIC_COLORS.income, max: moneyMax },
+    { data: expenses, color: METRIC_COLORS.expenses, max: moneyMax },
+    { data: portings, color: METRIC_COLORS.portings, max: portingsMax },
   ]
-  const clusterW = (CHART_W - PAD_SIDE * 2) / months.length
+  const clusterW = (w - PAD_SIDE * 2) / months.length
   const clusterPad = 5
   const innerW = clusterW - clusterPad
   const barGap = 1.5
@@ -142,30 +208,32 @@ function GroupedBarChart({ months, income, expenses, portings, hoverIndex, onHov
 
   return (
     <div className="relative">
-      <svg viewBox={`0 0 ${CHART_W} ${CHART_H}`} width="100%" role="img" aria-label="גרף עמודות מקובצות" onMouseLeave={() => onHover(null)}>
-        <line x1={PAD_SIDE} y1={CHART_H - PAD_BOTTOM} x2={CHART_W - PAD_SIDE} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1" />
-        {months.map((m, i) => {
-          const clusterX = PAD_SIDE + i * clusterW
-          const innerX = clusterX + clusterPad / 2
-          const isHover = i === hoverIndex
-          return (
-            <g key={m} opacity={hoverIndex === null || isHover ? 1 : 0.45} style={{ transition: 'opacity .15s' }}>
-              {series.map((s, si) => {
-                const h = (s.data[i] / (s.max * 1.1)) * PLOT_H
-                const x = innerX + barGap + si * (barW + barGap)
-                const y = CHART_H - PAD_BOTTOM - h
-                return <rect key={si} x={x} y={y} width={barW} height={h} rx="2" fill={s.color} />
-              })}
-              <rect x={clusterX} y={0} width={clusterW} height={CHART_H} fill="transparent" onMouseEnter={() => onHover(i)} style={{ cursor: 'pointer' }} />
-              <text x={clusterX + clusterW / 2} y={CHART_H - 7} textAnchor="middle" fontSize="9.5" fontWeight={isHover ? 800 : 500} fill={isHover ? 'var(--color-brand)' : '#6B7280'}>
-                {m}
-              </text>
-            </g>
-          )
-        })}
-      </svg>
+      <DragScroll widthRatio={months.length / VISIBLE_MONTHS} onScrollChange={(left, width) => setScroll({ left, width })}>
+        <svg viewBox={`0 0 ${w} ${CHART_H}`} width="100%" style={{ display: 'block' }} role="img" aria-label="גרף עמודות מקובצות" onMouseLeave={() => onHover(null)}>
+          <line x1={PAD_SIDE} y1={CHART_H - PAD_BOTTOM} x2={w - PAD_SIDE} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1" />
+          {months.map((m, i) => {
+            const clusterX = PAD_SIDE + i * clusterW
+            const innerX = clusterX + clusterPad / 2
+            const isHover = i === hoverIndex
+            return (
+              <g key={m + i} opacity={hoverIndex === null || isHover ? 1 : 0.45} style={{ transition: 'opacity .15s' }}>
+                {series.map((s, si) => {
+                  const h = (s.data[i] / s.max) * PLOT_H
+                  const x = innerX + barGap + si * (barW + barGap)
+                  const y = CHART_H - PAD_BOTTOM - h
+                  return <rect key={si} x={x} y={y} width={barW} height={h} rx="2" fill={s.color} />
+                })}
+                <rect x={clusterX} y={0} width={clusterW} height={CHART_H} fill="transparent" onMouseEnter={() => onHover(i)} style={{ cursor: 'pointer' }} />
+                <text x={clusterX + clusterW / 2} y={CHART_H - 7} textAnchor="middle" fontSize="7.5" fontWeight={isHover ? 800 : 400} fill={isHover ? 'var(--color-brand)' : '#9AA0AC'}>
+                  {m}
+                </text>
+              </g>
+            )
+          })}
+        </svg>
+      </DragScroll>
       {hoverIndex !== null && (
-        <ChartTooltip xPct={((PAD_SIDE + hoverIndex * clusterW + clusterW / 2) / CHART_W) * 100} yPct={(PAD_TOP / CHART_H) * 100}>
+        <ChartTooltip xPct={((PAD_SIDE + hoverIndex * clusterW + clusterW / 2 - viewBoxOffset) / CHART_W) * 100} yPct={(PAD_TOP / CHART_H) * 100}>
           <TooltipRows month={months[hoverIndex]} income={income[hoverIndex]} expenses={expenses[hoverIndex]} portings={portings[hoverIndex]} />
         </ChartTooltip>
       )}
@@ -228,16 +296,16 @@ export default function Dashboard() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-        <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
+        <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4 overflow-hidden">
           <div className="font-bold text-sm">מגמה חודשית</div>
-          <div className="text-[11px] text-text-2 mb-1">מגמת שינוי (אפריל=100) — ריחוף לערכים אמיתיים</div>
+          <div className="text-[11px] text-text-2 mb-1">מגמת שינוי מהחודש הראשון — גררו בעכבר לצפייה בחודשים ישנים יותר</div>
           <TrendChart months={months} income={income} expenses={expenses} portings={portings} hoverIndex={trendHover} onHover={setTrendHover} />
           <Legend />
         </div>
 
-        <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
+        <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4 overflow-hidden">
           <div className="font-bold text-sm">מכירות לפי חודש</div>
-          <div className="text-[11px] text-text-2 mb-1">כל עמודה בגובה יחסי לשיא שלה — ריחוף לפירוט</div>
+          <div className="text-[11px] text-text-2 mb-1">הכנסות/הוצאות באותה סקאלה — גררו לצפייה בעבר</div>
           <GroupedBarChart months={months} income={income} expenses={expenses} portings={portings} hoverIndex={barHover} onHover={setBarHover} />
           <Legend />
         </div>

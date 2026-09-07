@@ -1,9 +1,18 @@
 import Panel from '../components/Panel'
 import DataTable from '../components/DataTable'
-import { inventoryItems, allPortings, orders } from '../data/sampleData'
+import { inventoryItems, allPortings, orders, monthlyFinance, monthlyPortings } from '../data/sampleData'
 
 function money(n) {
   return `${n.toLocaleString('he-IL')} ₪`
+}
+
+function FinanceTile({ label, value, positive }) {
+  return (
+    <div className={`rounded-2xl p-4 text-white ${positive ? 'bg-gradient-to-br from-success to-[#0ea86f]' : 'bg-gradient-to-br from-danger to-[#c62828]'}`}>
+      <div className="text-xs font-semibold text-white/85">{label}</div>
+      <div className="font-display font-bold text-xl tabular-nums mt-1">{value}</div>
+    </div>
+  )
 }
 
 function buildCategoryReport() {
@@ -27,6 +36,12 @@ export default function Reports() {
   const effectiveness = Math.round((doneCount / allPortings.length) * 100)
   const totalRevenue = orders.reduce((sum, o) => sum + o.withVat, 0)
 
+  const monthCount = monthlyFinance.length
+  const totalIncome = monthlyFinance.reduce((sum, m) => sum + m.income, 0)
+  const totalExpenses = monthlyFinance.reduce((sum, m) => sum + m.expenses, 0)
+  const balance = totalIncome - totalExpenses
+  const totalPortings = monthlyPortings.reduce((sum, m) => sum + m.count, 0)
+
   const columns = [
     { key: 'category', header: 'קטגוריה', render: (r) => <span className="font-semibold">{r.category}</span> },
     { key: 'units', header: 'יחידות במלאי', render: (r) => <span className="tabular-nums">{r.units}</span> },
@@ -41,6 +56,22 @@ export default function Reports() {
 
   return (
     <div className="flex flex-col gap-4">
+      <Panel title="סיכום פיננסי" subtitle={`${monthCount} חודשים אחרונים, מבוסס על נתוני הדוגמה`}>
+        <div className="p-4 pt-2 flex flex-col gap-3">
+          <div className="grid grid-cols-3 gap-3">
+            <FinanceTile label="מאזן" value={money(balance)} positive={balance >= 0} />
+            <FinanceTile label='סה"כ הכנסות' value={money(totalIncome)} positive />
+            <FinanceTile label='סה"כ הוצאות' value={money(totalExpenses)} positive={false} />
+          </div>
+          <div className="grid grid-cols-4 gap-3">
+            <FinanceTile label="ממוצע מאזן חודשי" value={money(Math.round(balance / monthCount))} positive={balance >= 0} />
+            <FinanceTile label="ממוצע הכנסות חודשי" value={money(Math.round(totalIncome / monthCount))} positive />
+            <FinanceTile label="ממוצע הוצאות חודשי" value={money(Math.round(totalExpenses / monthCount))} positive={false} />
+            <FinanceTile label="ממוצע ניודים חודשי" value={(totalPortings / monthCount).toFixed(1)} positive />
+          </div>
+        </div>
+      </Panel>
+
       <div className="grid grid-cols-3 gap-3.5">
         <div className="bg-white border border-[#ECE9F7] rounded-2xl p-4">
           <div className="text-xs text-text-2 font-semibold">הכנסות מהזמנות (לדוגמה)</div>

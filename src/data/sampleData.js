@@ -33,8 +33,14 @@ export const monthlySales = [
   { month: 'ספט', value: 18240 },
 ]
 
-// הכנסות מול הוצאות (שני המדדים בש"ח, לכן ניתן להציג על אותו ציר)
+// הכנסות מול הוצאות (שני המדדים בש"ח, לכן ניתן להציג על אותו ציר) - 12 חודשים אחרונים, כדי לאפשר גלילה אחורה בגרף
 export const monthlyFinance = [
+  { month: 'אוק', income: 6200, expenses: 4200 },
+  { month: 'נוב', income: 6800, expenses: 4500 },
+  { month: 'דצמ', income: 8100, expenses: 5300 },
+  { month: 'ינו', income: 7200, expenses: 4800 },
+  { month: 'פבר', income: 7900, expenses: 5100 },
+  { month: 'מרץ', income: 9500, expenses: 6200 },
   { month: 'אפר', income: 11200, expenses: 7300 },
   { month: 'מאי', income: 13800, expenses: 8100 },
   { month: 'יונ', income: 15100, expenses: 9400 },
@@ -43,8 +49,14 @@ export const monthlyFinance = [
   { month: 'ספט', income: 18240, expenses: 10600 },
 ]
 
-// מספר ניודים (יחידה שונה מהכנסות/הוצאות - כמות, לא ש"ח - לכן בגרף נפרד)
+// מספר ניודים (יחידה שונה מהכנסות/הוצאות - כמות, לא ש"ח - לכן בגרף נפרד) - אותם 12 חודשים
 export const monthlyPortings = [
+  { month: 'אוק', count: 5 },
+  { month: 'נוב', count: 6 },
+  { month: 'דצמ', count: 7 },
+  { month: 'ינו', count: 6 },
+  { month: 'פבר', count: 7 },
+  { month: 'מרץ', count: 8 },
   { month: 'אפר', count: 9 },
   { month: 'מאי', count: 11 },
   { month: 'יונ', count: 12 },
