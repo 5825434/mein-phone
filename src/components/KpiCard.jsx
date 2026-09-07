@@ -16,7 +16,7 @@ export default function KpiCard({ index, label, value, trend, to }) {
     </>
   )
 
-  const className = `rounded-2xl p-4 flex flex-col gap-1.5 text-white shadow-[0_12px_24px_-14px_rgba(90,40,180,0.5)] bg-gradient-to-br ${gradients[index % gradients.length]} ${
+  const className = `rounded-2xl p-4 flex flex-col gap-1.5 text-white overflow-hidden shadow-[0_12px_24px_-14px_rgba(90,40,180,0.5)] bg-gradient-to-br ${gradients[index % gradients.length]} ${
     to ? 'transition-transform duration-150 hover:-translate-y-1 hover:shadow-[0_18px_30px_-14px_rgba(90,40,180,0.6)] cursor-pointer' : ''
   }`
 

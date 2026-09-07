@@ -281,13 +281,13 @@ export default function Settings() {
   const Content = tabContent[active]
 
   return (
-    <div className="flex gap-4">
-      <div className="w-52 shrink-0 flex flex-col gap-1">
+    <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex md:flex-col gap-1 overflow-x-auto md:overflow-visible pb-1 md:pb-0 md:w-52 md:shrink-0">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActive(tab.id)}
-            className={`text-right px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            className={`shrink-0 text-right px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
               active === tab.id ? 'bg-brand text-white font-bold' : 'text-text-2 hover:bg-white hover:text-brand'
             }`}
           >
@@ -295,7 +295,7 @@ export default function Settings() {
           </button>
         ))}
       </div>
-      <Panel title={tabs.find((t) => t.id === active).label} className="flex-1 p-5">
+      <Panel title={tabs.find((t) => t.id === active).label} className="flex-1 p-5 min-w-0">
         <Content />
       </Panel>
     </div>
