@@ -106,9 +106,9 @@ function TrendChart({ months, income, expenses, portings, hoverIndex, onHover })
           const pts = indexed[si].map((v, i) => `${scaleX(i, months.length)},${scaleY(v)}`).join(' ')
           return (
             <g key={s.color}>
-              <polyline points={pts} fill="none" stroke={s.color} strokeWidth="2.25" strokeLinejoin="round" strokeLinecap="round" />
+              <polyline points={pts} fill="none" stroke={s.color} strokeWidth="1.4" strokeLinejoin="round" strokeLinecap="round" />
               {indexed[si].map((v, i) => (
-                <circle key={i} cx={scaleX(i, months.length)} cy={scaleY(v)} r={i === hoverIndex ? 4.5 : 2.25} fill={s.color} stroke="#fff" strokeWidth={i === hoverIndex ? 1.3 : 0} />
+                <circle key={i} cx={scaleX(i, months.length)} cy={scaleY(v)} r={i === hoverIndex ? 4 : 1.8} fill={s.color} stroke="#fff" strokeWidth={i === hoverIndex ? 1.2 : 0} />
               ))}
             </g>
           )
@@ -135,8 +135,10 @@ function GroupedBarChart({ months, income, expenses, portings, hoverIndex, onHov
     { data: portings, color: METRIC_COLORS.portings, max: Math.max(...portings) },
   ]
   const clusterW = (CHART_W - PAD_SIDE * 2) / months.length
-  const barGap = 2
-  const barW = (clusterW - barGap * 4) / 3
+  const clusterPad = 5
+  const innerW = clusterW - clusterPad
+  const barGap = 1.5
+  const barW = (innerW - barGap * 4) / 3
 
   return (
     <div className="relative">
@@ -144,12 +146,13 @@ function GroupedBarChart({ months, income, expenses, portings, hoverIndex, onHov
         <line x1={PAD_SIDE} y1={CHART_H - PAD_BOTTOM} x2={CHART_W - PAD_SIDE} y2={CHART_H - PAD_BOTTOM} stroke="#E6E4F0" strokeWidth="1" />
         {months.map((m, i) => {
           const clusterX = PAD_SIDE + i * clusterW
+          const innerX = clusterX + clusterPad / 2
           const isHover = i === hoverIndex
           return (
             <g key={m} opacity={hoverIndex === null || isHover ? 1 : 0.45} style={{ transition: 'opacity .15s' }}>
               {series.map((s, si) => {
                 const h = (s.data[i] / (s.max * 1.1)) * PLOT_H
-                const x = clusterX + barGap + si * (barW + barGap)
+                const x = innerX + barGap + si * (barW + barGap)
                 const y = CHART_H - PAD_BOTTOM - h
                 return <rect key={si} x={x} y={y} width={barW} height={h} rx="2" fill={s.color} />
               })}
