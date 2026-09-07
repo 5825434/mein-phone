@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import KpiCard from '../components/KpiCard'
 import StatusBadge from '../components/StatusBadge'
+import CustomerDrawer from '../components/CustomerDrawer'
 import {
   kpis,
   monthlyFinance,
   monthlyPortings,
   salesByCategory,
   recentPortings,
+  customers,
 } from '../data/sampleData'
 
 const CHART_W = 300
@@ -153,6 +155,7 @@ function PieChart() {
 
 export default function Dashboard() {
   const [hoverIndex, setHoverIndex] = useState(null)
+  const [selectedCustomer, setSelectedCustomer] = useState(null)
   const months = monthlyFinance.map((m) => m.month)
   const activeIndex = hoverIndex ?? months.length - 1
 
@@ -217,6 +220,7 @@ export default function Dashboard() {
 
       <div className="bg-white border border-[#ECE9F7] rounded-2xl overflow-hidden">
         <div className="font-bold text-sm px-4.5 pt-4">ניודים אחרונים</div>
+        <p className="text-xs text-text-2 px-4.5 pb-1">לחיצה על שורה פותחת את כרטיס הלקוח</p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm mt-2">
             <thead>
@@ -231,8 +235,12 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {recentPortings.map((row) => (
-                <tr key={row.customer} className="border-b border-[#F1EFF9] last:border-0">
-                  <td className="px-4.5 py-2.5">{row.customer}</td>
+                <tr
+                  key={row.customer}
+                  onClick={() => setSelectedCustomer(customers.find((c) => c.name === row.customer) ?? null)}
+                  className="border-b border-[#F1EFF9] last:border-0 cursor-pointer hover:bg-[#FAF8FF] transition-colors"
+                >
+                  <td className="px-4.5 py-2.5 font-semibold text-brand">{row.customer}</td>
                   <td className="px-4.5 py-2.5 tabular-nums text-text-2">{row.date}</td>
                   <td className="px-4.5 py-2.5">{row.currentCarrier}</td>
                   <td className="px-4.5 py-2.5">
@@ -248,6 +256,10 @@ export default function Dashboard() {
           </table>
         </div>
       </div>
+
+      {selectedCustomer && (
+        <CustomerDrawer customer={selectedCustomer} onClose={() => setSelectedCustomer(null)} onSave={() => setSelectedCustomer(null)} />
+      )}
     </div>
   )
 }
