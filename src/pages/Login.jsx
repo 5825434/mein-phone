@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { useAuth } from '../lib/AuthContext'
 
@@ -27,7 +27,8 @@ function GiftIcon(props) {
 }
 
 export default function Login() {
-  const { session, configured } = useAuth()
+  const { session, configured, continueAsGuest } = useAuth()
+  const navigate = useNavigate()
   const [mode, setMode] = useState('start') // start | signin | signup
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,6 +37,11 @@ export default function Login() {
   const [busy, setBusy] = useState(false)
 
   if (session) return <Navigate to="/" replace />
+
+  const handleGuest = () => {
+    continueAsGuest()
+    navigate('/')
+  }
 
   const handleGoogle = async () => {
     setError('')
@@ -149,23 +155,27 @@ export default function Login() {
           </form>
         )}
 
-        <p className="text-center text-sm mt-6">
+        <div className="text-center text-sm mt-6 flex flex-col gap-2">
           {mode === 'signup' ? (
-            <>
+            <p>
               כבר רשום/ה?{' '}
               <button onClick={() => setMode('signin')} className="text-brand font-semibold hover:underline">
                 התחברות
               </button>
-            </>
+            </p>
           ) : (
-            <>
+            <p>
               משתמש חדש?{' '}
               <button onClick={() => setMode('signup')} className="text-brand font-semibold hover:underline">
                 הרשמה
               </button>
-            </>
+            </p>
           )}
-        </p>
+          <button onClick={handleGuest} className="text-brand font-semibold hover:underline">
+            המשך ללא הרשמה
+          </button>
+          <p className="text-xs text-text-2">תצוגה עם נתוני דוגמה בלבד — שום דבר לא יישמר</p>
+        </div>
       </div>
     </div>
   )

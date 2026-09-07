@@ -26,14 +26,18 @@ function MenuIcon(props) {
 export default function Layout() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { session, configured } = useAuth()
+  const { session, configured, guest, exitGuest } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const title = titles[pathname] ?? 'מיין פון'
-  const userLabel = session?.user?.email ?? 'יוסי · מנהל'
+  const userLabel = session?.user?.email ?? (guest ? 'אורח (הדגמה)' : 'יוסי · מנהל')
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
+    if (guest) {
+      exitGuest()
+    } else {
+      await supabase.auth.signOut()
+    }
     navigate('/login')
   }
 

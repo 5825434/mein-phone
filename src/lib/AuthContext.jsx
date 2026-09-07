@@ -1,11 +1,13 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 
-const AuthContext = createContext({ session: null, loading: true, configured: false })
+const GUEST_KEY = 'mein-phone-guest'
+const AuthContext = createContext({ session: null, loading: true, configured: false, guest: false })
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null)
   const [loading, setLoading] = useState(!!supabase)
+  const [guest, setGuest] = useState(() => sessionStorage.getItem(GUEST_KEY) === '1')
 
   useEffect(() => {
     if (!supabase) {
@@ -18,11 +20,29 @@ export function AuthProvider({ children }) {
     })
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
+      if (newSession) {
+        setGuest(false)
+        sessionStorage.removeItem(GUEST_KEY)
+      }
     })
     return () => listener.subscription.unsubscribe()
   }, [])
 
-  return <AuthContext.Provider value={{ session, loading, configured: !!supabase }}>{children}</AuthContext.Provider>
+  const continueAsGuest = () => {
+    sessionStorage.setItem(GUEST_KEY, '1')
+    setGuest(true)
+  }
+
+  const exitGuest = () => {
+    sessionStorage.removeItem(GUEST_KEY)
+    setGuest(false)
+  }
+
+  return (
+    <AuthContext.Provider value={{ session, loading, configured: !!supabase, guest, continueAsGuest, exitGuest }}>
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export const useAuth = () => useContext(AuthContext)
