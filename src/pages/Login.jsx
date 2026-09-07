@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Navigate, useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth'
+import { auth, googleProvider } from '../lib/firebaseClient'
 import { useAuth } from '../lib/AuthContext'
 
 function GoogleIcon(props) {
@@ -27,16 +28,15 @@ function GiftIcon(props) {
 }
 
 export default function Login() {
-  const { session, configured, continueAsGuest } = useAuth()
+  const { user, configured, continueAsGuest } = useAuth()
   const navigate = useNavigate()
   const [mode, setMode] = useState('start') // start | signin | signup
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const [info, setInfo] = useState('')
   const [busy, setBusy] = useState(false)
 
-  if (session) return <Navigate to="/" replace />
+  if (user) return <Navigate to="/" replace />
 
   const handleGuest = () => {
     continueAsGuest()
@@ -45,26 +45,27 @@ export default function Login() {
 
   const handleGoogle = async () => {
     setError('')
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google' })
-    if (error) setError(error.message)
+    try {
+      await signInWithPopup(auth, googleProvider)
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    setInfo('')
     setBusy(true)
-    const action =
-      mode === 'signup'
-        ? supabase.auth.signUp({ email, password })
-        : supabase.auth.signInWithPassword({ email, password })
-    const { error } = await action
-    setBusy(false)
-    if (error) {
-      setError(error.message)
-    } else if (mode === 'signup') {
-      setInfo('נרשמת בהצלחה! בדוק/י את תיבת המייל לאישור החשבון, ואז חזור/י להתחבר.')
+    try {
+      if (mode === 'signup') {
+        await createUserWithEmailAndPassword(auth, email, password)
+      } else {
+        await signInWithEmailAndPassword(auth, email, password)
+      }
+    } catch (err) {
+      setError(err.message)
     }
+    setBusy(false)
   }
 
   return (
@@ -82,7 +83,7 @@ export default function Login() {
 
         {!configured && (
           <div className="mb-4 p-3 rounded-lg bg-[#FFF8E8] text-[#8a6d1a] text-xs leading-relaxed">
-            Supabase עדיין לא מחובר בקוד הזה — הכניסה כאן לא תעבוד עד שיוגדרו המפתחות ב-.env. בינתיים
+            Firebase עדיין לא מחובר בקוד הזה — הכניסה כאן לא תעבוד עד שיוגדרו המפתחות ב-.env. בינתיים
             האתר פתוח וזמין עם נתוני דוגמה.
           </div>
         )}
@@ -139,7 +140,6 @@ export default function Login() {
             </label>
 
             {error && <p className="text-xs text-danger">{error}</p>}
-            {info && <p className="text-xs text-success">{info}</p>}
 
             <button
               type="submit"

@@ -1,13 +1,13 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 
-// כל עוד Supabase לא מחובר, האפליקציה נשארת פתוחה במצב הדגמה (נתוני דוגמה) בלי לחסום בכניסה.
-// ברגע שה-URL/מפתח מוגדרים, מסך זה אוכף כניסה אמיתית - חוץ אם המשתמש בחר "המשך ללא הרשמה" (מצב אורח).
+// כל עוד Firebase לא מחובר, האפליקציה נשארת פתוחה במצב הדגמה (נתוני דוגמה) בלי לחסום בכניסה.
+// ברגע שהקוד מוגדר, מסך זה אוכף כניסה אמיתית - חוץ אם המשתמש בחר "המשך ללא הרשמה" (מצב אורח).
 export default function RequireAuth({ children }) {
-  const { session, loading, configured, guest } = useAuth()
+  const { user, loading, configured, guest } = useAuth()
 
   if (!configured) return children
   if (loading) return null
-  if (!session && !guest) return <Navigate to="/login" replace />
+  if (!user && !guest) return <Navigate to="/login" replace />
   return children
 }

@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { signOut } from 'firebase/auth'
 import Sidebar from './Sidebar'
 import { useAuth } from '../lib/AuthContext'
-import { supabase } from '../lib/supabaseClient'
+import { auth } from '../lib/firebaseClient'
 
 const titles = {
   '/': 'דשבורד',
@@ -26,17 +27,17 @@ function MenuIcon(props) {
 export default function Layout() {
   const { pathname } = useLocation()
   const navigate = useNavigate()
-  const { session, configured, guest, exitGuest } = useAuth()
+  const { user, configured, guest, exitGuest } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const title = titles[pathname] ?? 'מיין פון'
-  const userLabel = session?.user?.email ?? (guest ? 'אורח (הדגמה)' : 'יוסי · מנהל')
+  const userLabel = user?.email ?? (guest ? 'אורח (הדגמה)' : 'יוסי · מנהל')
 
   const handleSignOut = async () => {
     if (guest) {
       exitGuest()
     } else {
-      await supabase.auth.signOut()
+      await signOut(auth)
     }
     navigate('/login')
   }

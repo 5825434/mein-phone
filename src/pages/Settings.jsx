@@ -18,7 +18,7 @@ const tabs = [
 const SaveButton = () => (
   <button
     disabled
-    title="שמירה תופעל לאחר חיבור Supabase"
+    title="שמירה תופעל לאחר חיבור Firebase"
     className="self-start mt-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-text-2 cursor-not-allowed"
   >
     שמור שינויים
@@ -64,7 +64,7 @@ function UsersTab() {
       ))}
       <button
         disabled
-        title="הוספת עובד תתאפשר לאחר חיבור Supabase"
+        title="הוספת עובד תתאפשר לאחר חיבור Firebase"
         className="self-start px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-text-2 cursor-not-allowed"
       >
         + הוספת עובד
@@ -136,7 +136,7 @@ function CarriersTab() {
         </button>
       </div>
       <p className="text-xs text-text-2">
-        הרשימה כאן פעילה בדפדפן שלך בלבד לצורך הדגמה — עם Supabase היא תישמר ותהיה זמינה בכל המסכים.
+        הרשימה כאן פעילה בדפדפן שלך בלבד לצורך הדגמה — עם Firebase היא תישמר ותהיה זמינה בכל המסכים.
       </p>
     </div>
   )
@@ -237,7 +237,7 @@ function DataTab() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowFinalWarning(false)}>
           <div className="bg-white rounded-2xl p-6 max-w-sm text-center" onClick={(e) => e.stopPropagation()}>
             <div className="font-bold text-danger mb-2">בטוח לגמרי?</div>
-            <p className="text-sm text-text-2 mb-4">זו הפעולה בלתי הפיכה. במערכת האמיתית (עם Supabase) המחיקה תתבצע כאן.</p>
+            <p className="text-sm text-text-2 mb-4">זו הפעולה בלתי הפיכה. במערכת האמיתית (עם Firebase) המחיקה תתבצע כאן.</p>
             <div className="flex gap-2 justify-center">
               <button onClick={() => setShowFinalWarning(false)} className="px-4 py-2 rounded-lg text-sm font-semibold border border-border">
                 ביטול

@@ -38,7 +38,7 @@ function OrderModal({ initial, onClose, onSave }) {
       saveDisabled={!draft.customer.trim() || !draft.summary.trim()}
       onSave={() => onSave({ ...draft, id: draft.id || `ORD-${Date.now().toString().slice(-4)}` })}
       wide
-      footNote="ההזמנה נשמרת בדפדפן שלך בלבד לצורך הדגמה — עם Supabase היא תישמר לצמיתות."
+      footNote="ההזמנה נשמרת בדפדפן שלך בלבד לצורך הדגמה — עם Firebase היא תישמר לצמיתות."
     >
       <div className="grid grid-cols-2 gap-3">
         <SelectField label="לקוח" value={draft.customer} onChange={(v) => setDraft({ ...draft, customer: v })} options={customers.map((c) => c.name)} />
@@ -116,7 +116,7 @@ export default function Orders() {
       </Panel>
 
       <p className="text-xs text-text-2 max-w-2xl">
-        הפקת חשבונית PDF וסימון הזמנה כ"בוטלה" (במקום מחיקה) יתווספו עם Supabase — לפי סעיף 3.5 באיפיון.
+        הפקת חשבונית PDF וסימון הזמנה כ"בוטלה" (במקום מחיקה) יתווספו עם Firebase — לפי סעיף 3.5 באיפיון.
       </p>
 
       {modal && (

@@ -72,7 +72,7 @@ function AddCustomerModal({ onClose, onAdd }) {
           </button>
         </div>
         <p className="text-xs text-text-2 mt-3">
-          הלקוח נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Supabase הוא יישמר לצמיתות ויהיה זמין לכל העובדים.
+          הלקוח נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Firebase הוא יישמר לצמיתות ויהיה זמין לכל העובדים.
         </p>
       </div>
     </div>
@@ -130,7 +130,7 @@ export default function Customers() {
       </Panel>
 
       <p className="text-xs text-text-2 max-w-2xl">
-        לקוחות חדשים והערות שנשמרות כאן פעילים בדפדפן שלך בלבד לצורך הדגמה — עם Supabase הם יישמרו
+        לקוחות חדשים והערות שנשמרות כאן פעילים בדפדפן שלך בלבד לצורך הדגמה — עם Firebase הם יישמרו
         לצמיתות ויהיו זמינים לכל העובדים, לפי סעיף 3.2 באיפיון.
       </p>
 

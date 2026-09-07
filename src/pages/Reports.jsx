@@ -86,7 +86,7 @@ export default function Reports() {
           <div className="text-xs text-text-2 font-semibold">ייצוא</div>
           <button
             disabled
-            title="ייצוא לאקסל יופעל לאחר חיבור Supabase"
+            title="ייצוא לאקסל יופעל לאחר חיבור Firebase"
             className="mt-2 self-start px-4 py-2 rounded-lg text-sm font-semibold bg-gray-100 text-text-2 cursor-not-allowed"
           >
             ייצוא לאקסל
@@ -99,7 +99,7 @@ export default function Reports() {
       </Panel>
 
       <p className="text-xs text-text-2 max-w-2xl">
-        דוח מכירות מפורט לפי נציג, ודוח ניודים מלא, יתווספו עם Supabase (נתונים אמיתיים לאורך זמן) —
+        דוח מכירות מפורט לפי נציג, ודוח ניודים מלא, יתווספו עם Firebase (נתונים אמיתיים לאורך זמן) —
         לפי סעיף 3.6 באיפיון. המספרים כאן מחושבים מנתוני הדוגמה בלבד.
       </p>
     </div>

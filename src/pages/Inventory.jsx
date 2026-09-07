@@ -43,7 +43,7 @@ function ItemModal({ initial, onClose, onSave }) {
       saveDisabled={!draft.name.trim() || !draft.sku.trim()}
       onSave={() => onSave({ ...draft, qty: Number(draft.qty) || 0, status: statusFromQty(Number(draft.qty) || 0) })}
       wide
-      footNote="הפריט נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Supabase הוא יישמר לצמיתות."
+      footNote="הפריט נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Firebase הוא יישמר לצמיתות."
     >
       <div className="grid grid-cols-2 gap-3">
         <Field label='מק"ט' value={draft.sku} onChange={set('sku')} placeholder="PH-XXXX" />

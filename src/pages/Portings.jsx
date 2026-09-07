@@ -51,7 +51,7 @@ function PortingModal({ initial, onClose, onSave }) {
         })
       }
       wide
-      footNote="נתונים אלה פעילים בדפדפן שלך בלבד לצורך הדגמה — עם Supabase הם יישמרו לצמיתות."
+      footNote="נתונים אלה פעילים בדפדפן שלך בלבד לצורך הדגמה — עם Firebase הם יישמרו לצמיתות."
     >
       <div className="grid grid-cols-2 gap-3">
         <Field label="לקוח" value={draft.customer} onChange={set('customer')} placeholder="שם הלקוח" />

@@ -28,7 +28,7 @@ function SupplierModal({ initial, onClose, onSave }) {
       saveDisabled={!draft.name.trim()}
       onSave={() => onSave({ ...draft, openBalance: Number(draft.openBalance) || 0 })}
       wide
-      footNote="הספק נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Supabase הוא יישמר לצמיתות."
+      footNote="הספק נשמר בדפדפן שלך בלבד לצורך הדגמה — עם Firebase הוא יישמר לצמיתות."
     >
       <div className="grid grid-cols-2 gap-3">
         <Field label="שם הספק" value={draft.name} onChange={set('name')} placeholder='לדוגמה: סלולר פלוס בע"מ' />
@@ -103,7 +103,7 @@ export default function Suppliers() {
       </Panel>
 
       <p className="text-xs text-text-2 max-w-2xl">
-        הזמנות רכש, תשלומים לספק וקישור פריט-לרכישה יתווספו עם Supabase — לפי סעיף 3.7 באיפיון. שתי
+        הזמנות רכש, תשלומים לספק וקישור פריט-לרכישה יתווספו עם Firebase — לפי סעיף 3.7 באיפיון. שתי
         הקבוצות (עם/בלי מע"מ) מפוצלות בכוונה, בדיוק כמו במלאי.
       </p>
 
