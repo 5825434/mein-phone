@@ -1,6 +1,8 @@
 import { useState } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import { useAuth } from '../lib/AuthContext'
+import { supabase } from '../lib/supabaseClient'
 
 const titles = {
   '/': 'דשבורד',
@@ -23,8 +25,17 @@ function MenuIcon(props) {
 
 export default function Layout() {
   const { pathname } = useLocation()
+  const navigate = useNavigate()
+  const { session, configured } = useAuth()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
   const title = titles[pathname] ?? 'מיין פון'
+  const userLabel = session?.user?.email ?? 'יוסי · מנהל'
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    navigate('/login')
+  }
 
   return (
     <div className="flex min-h-screen" dir="rtl">
@@ -41,9 +52,22 @@ export default function Layout() {
             </button>
             <h2 className="font-display text-lg font-bold m-0">{title}</h2>
           </div>
-          <div className="flex items-center gap-2 text-sm text-text-2">
-            <span className="rounded-full bg-[#F2ECFC]" style={{ width: 26, height: 26 }} />
-            <span className="hidden sm:inline">יוסי · מנהל</span>
+          <div className="relative">
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              className="flex items-center gap-2 text-sm text-text-2"
+              disabled={!configured}
+            >
+              <span className="rounded-full bg-[#F2ECFC]" style={{ width: 26, height: 26 }} />
+              <span className="hidden sm:inline">{userLabel}</span>
+            </button>
+            {menuOpen && configured && (
+              <div className="absolute left-0 mt-2 bg-white border border-border rounded-lg shadow-lg py-1 w-40 z-20" onMouseLeave={() => setMenuOpen(false)}>
+                <button onClick={handleSignOut} className="w-full text-right px-3 py-2 text-sm hover:bg-bg text-danger">
+                  התנתקות
+                </button>
+              </div>
+            )}
           </div>
         </header>
         <main className="flex-1 p-4 md:p-6 bg-bg overflow-x-hidden">
